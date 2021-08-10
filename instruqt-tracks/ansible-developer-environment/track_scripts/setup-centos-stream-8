@@ -1,0 +1,8 @@
+#!/bin/bash -l
+
+/bin/python3 -m pip install --upgrade --user pip
+/bin/python3 -m pip install --upgrade --user ansible
+
+ln -s /root/.local/bin /root/bin
+
+/usr/sbin/useradd -m -U -G google-sudoers -s /bin/bash contributor

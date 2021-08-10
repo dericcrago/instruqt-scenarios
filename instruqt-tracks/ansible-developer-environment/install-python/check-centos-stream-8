@@ -1,0 +1,181 @@
+#!/bin/bash -l
+
+cat > /root/messages.sh << 'EOF'
+#!/bin/bash
+EOF
+
+chmod +x /root/messages.sh
+
+cat > /root/pyenv-bashrc-configuration.yml << 'EOF'
+---
+- name: check for lines in ~/.bashrc
+  ansible.builtin.lineinfile:
+    path: ~/.bashrc
+    line: "{{ line }}"
+  become: true
+  become_user: "{{ pyenv_user }}"
+  ignore_errors: true
+  register: lineinfile_result
+
+- name: handle missing lines in ~/.bashrc
+  block:
+  - name: add error to messages
+    ansible.builtin.lineinfile:
+      path: /root/messages.sh
+      line: /bin/fail-message '`{{ line }}` appears to be missing from `~/.bashrc`.'
+    check_mode: false
+
+  - name: end play
+    ansible.builtin.meta: end_play
+  when: lineinfile_result is changed
+EOF
+
+cat > /root/pyenv-build-dependencies.yml << 'EOF'
+---
+- name: check for pyenv build dependencies
+  ansible.builtin.dnf:
+    name: "{{ package }}"
+    state: present
+  ignore_errors: true
+  register: dnf_result
+
+- name: handle missing pyenv build dependencies
+  block:
+  - name: add error to messages
+    ansible.builtin.lineinfile:
+      path: /root/messages.sh
+      line: /bin/fail-message '`{{ package }}` does not appear to be installed.'
+    check_mode: false
+
+  - name: end play
+    ansible.builtin.meta: end_play
+  when: dnf_result is changed or dnf_result['rc'] != 0
+EOF
+
+cat > /root/check-install-python.yml << 'EOF'
+---
+- hosts: localhost
+  vars:
+    pyenv_bashrc_lines:
+      - export PYENV_ROOT="$HOME/.pyenv"
+      - export PATH="$PYENV_ROOT/bin:$PATH"
+      - eval "$(pyenv init --path)"
+      - eval "$(pyenv init -)"
+    pyenv_build_dependencies:
+      - bzip2
+      - bzip2-devel
+      - gcc
+      - libffi-devel
+      - make
+      - openssl-devel
+      - readline-devel
+      - sqlite
+      - sqlite-devel
+      - tk-devel
+      - xz-devel
+      - zlib-devel
+    pyenv_python_version: '3.9.6'
+    pyenv_user: contributor
+  tasks:
+    - name: check that git is installed
+      ansible.builtin.dnf:
+        name: git
+        state: present
+      ignore_errors: true
+      register: git_install_result
+
+    - name: handle git missing
+      block:
+      - name: add error to messages
+        ansible.builtin.lineinfile:
+          path: /root/messages.sh
+          line: /bin/fail-message '`git` does not appear to be installed.'
+        check_mode: false
+
+      - name: end play
+        ansible.builtin.meta: end_play
+      when: git_install_result is changed or git_install_result['rc'] != 0
+
+    - name: check for pyenv repo cloned to ~/.pyenv
+      ansible.builtin.git:
+        repo: https://github.com/pyenv/pyenv.git
+        dest: ~/.pyenv
+      become: true
+      become_user: "{{ pyenv_user }}"
+      register: git_clone_result
+
+    - name: handle pyenv repo not cloned to ~/.pyenv
+      block:
+      - name: add error to messages
+        ansible.builtin.lineinfile:
+          path: /root/messages.sh
+          line: /bin/fail-message '`pyenv` repo not found at `~/.pyenv`.'
+        check_mode: false
+
+      - name: end play
+        ansible.builtin.meta: end_play
+      when: git_clone_result is changed
+
+    - name: include pyenv-bashrc-configuration.yml
+      ansible.builtin.include_tasks:
+        file: pyenv-bashrc-configuration.yml
+      loop: "{{ pyenv_bashrc_lines }}"
+      loop_control:
+        loop_var: line
+
+    - name: include pyenv-build-dependencies.yml
+      ansible.builtin.include_tasks:
+        file: pyenv-build-dependencies.yml
+      loop: "{{ pyenv_build_dependencies }}"
+      loop_control:
+        loop_var: package
+
+    - name: check for python {{ pyenv_python_version }}
+      ansible.builtin.command:
+        argv:
+          - /bin/bash
+          - -i
+          - -c
+          - pyenv install --skip-existing {{ pyenv_python_version }}
+        creates: ~/.pyenv/versions/{{ pyenv_python_version }}
+      become: true
+      become_user: "{{ pyenv_user }}"
+      register: python_install_result
+
+    - name: handle python {{ pyenv_python_version }} missing
+      block:
+      - name: add error to messages
+        ansible.builtin.lineinfile:
+          path: /root/messages.sh
+          line: /bin/fail-message '`python` `{{ pyenv_python_version }}` not found.'
+        check_mode: false
+
+      - name: end play
+        ansible.builtin.meta: end_play
+      when: python_install_result is changed
+
+    - name: check for global python version set to {{ pyenv_python_version }}
+      ansible.builtin.lineinfile:
+        path: ~/.pyenv/version
+        line: "{{ pyenv_python_version }}"
+      ignore_errors: true
+      become: true
+      become_user: "{{ pyenv_user }}"
+      register: python_global_version_result
+
+    - name: handle global python version not set to {{ pyenv_python_version }}
+      block:
+      - name: add error to messages
+        ansible.builtin.lineinfile:
+          path: /root/messages.sh
+          line: /bin/fail-message 'global python version not set to `{{ pyenv_python_version }}` for `{{ pyenv_user }}` user.'
+        check_mode: false
+
+      - name: end play
+        ansible.builtin.meta: end_play
+      when: python_global_version_result is changed or python_global_version_result['rc'] != 0
+EOF
+
+ansible-playbook --check /root/check-install-python.yml
+
+/root/messages.sh

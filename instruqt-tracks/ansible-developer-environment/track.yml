@@ -1,0 +1,149 @@
+slug: ansible-developer-environment
+id: jgcv8ag8mdsy
+type: track
+title: Ansible Developer Environment
+description: ""
+icon: ""
+tags: []
+owner: redhat
+developers:
+- dcrago@redhat.com
+private: true
+published: false
+skipping_enabled: true
+challenges:
+- slug: install-docker
+  id: d2fs5oxettui
+  type: challenge
+  title: Install Docker
+  assignment: |-
+    Snippets from the [Install Docker Engine on CentOS](https://docs.docker.com/engine/install/centos/) docs.
+
+    ## [Uninstall old versions](https://docs.docker.com/engine/install/centos/#uninstall-old-versions) ##
+
+    ```
+    sudo yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
+    ```
+
+    ## [Install using the repository](https://docs.docker.com/engine/install/centos/#install-using-the-repository) ##
+
+    ### Set up the repository ###
+
+    ```
+    sudo yum install -y yum-utils
+    ```
+
+    ```
+    sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+    ```
+
+    ### Install Docker Engine ###
+
+    ```
+    sudo yum install docker-ce docker-ce-cli containerd.io
+    ```
+
+    ```
+    sudo systemctl start docker
+    ```
+
+    ```
+    sudo docker run hello-world
+    ```
+
+    Snippets from the [Post-installation steps for Linux](https://docs.docker.com/engine/install/linux-postinstall/) docs.
+
+    [Manage Docker as a non-root user](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
+
+    ```
+    sudo usermod -aG docker $USER
+    ```
+
+    ```
+    docker run hello-world
+    ```
+
+    [Configure Docker to start on boot](https://docs.docker.com/engine/install/linux-postinstall/#configure-docker-to-start-on-boot)
+
+    ```
+    sudo systemctl enable docker.service
+    sudo systemctl enable containerd.service
+    ```
+  tabs:
+  - title: Terminal
+    type: terminal
+    hostname: centos-stream-8
+  difficulty: basic
+  timelimit: 1800
+- slug: install-python
+  id: 2tav9rlrpots
+  type: challenge
+  title: Install Python
+  assignment: |-
+    ### Install `git` ###
+
+    ```
+    sudo yum install git
+    ```
+
+    ### Checkout `pyenv` ###
+
+    ```
+    git clone https://github.com/pyenv/pyenv.git ~/.pyenv
+    ```
+
+    ### Add `pyenv` to `bashrc` and `source` it in ###
+
+    ```
+    cat >> ~/.bashrc << 'EOF'
+    export PYENV_ROOT="$HOME/.pyenv"
+    export PATH="$PYENV_ROOT/bin:$PATH"
+    eval "$(pyenv init --path)"
+    eval "$(pyenv init -)"
+    EOF
+
+    source ~/.bashrc
+    ```
+
+    ### Install `pyenv` build dependencies ###
+
+    ```
+    sudo yum install make gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel
+    ```
+
+    ### Check `pyenv` for installable versions ###
+
+    ```
+    pyenv install --list
+    ```
+
+    ### Install `python 3.9.6` (this will take a couple minutes) ###
+
+    ```
+    pyenv install --skip-existing 3.9.6
+    ```
+
+    ### Set `pyenv` global version to `3.9.6` ###
+
+    ```
+    pyenv global 3.9.6
+    ```
+
+    ### Check `pyenv` versions ###
+
+    ```
+    pyenv versions
+    ```
+
+    ### Update `pip` from `python 3.9.6` to the latest version ###
+
+    ```
+    pip install --upgrade pip
+    ```
+  tabs:
+  - title: Terminal
+    type: terminal
+    hostname: centos-stream-8
+  difficulty: basic
+  timelimit: 1800
+checksum: "7492443049504753602"

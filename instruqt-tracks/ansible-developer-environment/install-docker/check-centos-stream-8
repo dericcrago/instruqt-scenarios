@@ -1,0 +1,115 @@
+#!/bin/bash -l
+
+cat > /root/messages.sh << 'EOF'
+#!/bin/bash
+EOF
+
+chmod +x /root/messages.sh
+
+cat > /root/docker-packages.yml << 'EOF'
+---
+- name: check for docker packages
+  ansible.builtin.dnf:
+    name: "{{ package }}"
+    state: present
+  ignore_errors: true
+  register: dnf_result
+
+- name: handle docker packages error
+  block:
+  - name: add error to messages
+    ansible.builtin.lineinfile:
+      path: /root/messages.sh
+      line: /bin/fail-message '`{{ package }}` does not appear to be installed.'
+    check_mode: false
+
+  - name: end play
+    ansible.builtin.meta: end_play
+  when: dnf_result is changed or dnf_result['rc'] != 0
+EOF
+
+cat > /root/docker-users.yml << 'EOF'
+---
+- name: check for '{{ user }}' user in the 'docker' group
+  ansible.builtin.user:
+    name: "{{ user }}"
+    groups: docker
+    append: yes
+  ignore_errors: true
+  register: user_result
+
+- name: handle '{{ user }}' user missing from 'docker' group
+  block:
+  - name: add error to messages
+    ansible.builtin.lineinfile:
+      path: /root/messages.sh
+      line: /bin/fail-message '`{{ user }}` user does not appear to be in the `docker` group.'
+    check_mode: false
+
+  - name: end play
+    ansible.builtin.meta: end_play
+  when: user_result is changed
+EOF
+
+cat > /root/docker-services.yml << 'EOF'
+---
+- name: check that '{{ service }}' is started and enabled
+  ansible.builtin.systemd:
+    name: "{{ service }}"
+    enabled: true
+    state: started
+  ignore_errors: true
+  register: systemd_result
+
+- name: handle '{{ service }}' either not started or not enabled
+  block:
+  - name: add error to messages
+    ansible.builtin.lineinfile:
+      path: /root/messages.sh
+      line: /bin/fail-message '`{{ service }}` does not appear to be enabled and started.'
+    check_mode: false
+
+  - name: end play
+    ansible.builtin.meta: end_play
+  when: systemd_result is changed
+EOF
+
+cat > /root/check-install-docker.yml << 'EOF'
+---
+- hosts: localhost
+  vars:
+    docker_packages:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    docker_services:
+      - docker.service
+      - containerd.service
+    docker_users:
+      - contributor
+  tasks:
+    - name: include docker-packages.yml
+      ansible.builtin.include_tasks:
+        file: docker-packages.yml
+      loop: "{{ docker_packages }}"
+      loop_control:
+        loop_var: package
+
+    - name: include docker-users.yml
+      ansible.builtin.include_tasks:
+        file: docker-users.yml
+      loop: "{{ docker_users }}"
+      loop_control:
+        loop_var: user
+
+    - name: include docker-services.yml
+      ansible.builtin.include_tasks:
+        file: docker-services.yml
+      loop: "{{ docker_services }}"
+      loop_control:
+        loop_var: service
+EOF
+
+ansible-playbook --check /root/check-install-docker.yml
+
+/root/messages.sh

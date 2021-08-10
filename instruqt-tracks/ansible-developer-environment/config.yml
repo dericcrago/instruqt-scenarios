@@ -1,0 +1,6 @@
+version: "2"
+virtualmachines:
+- name: centos-stream-8
+  image: centos-stream-8-v20210721
+  shell: /usr/bin/su - contributor
+  machine_type: n1-standard-1

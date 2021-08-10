@@ -1,0 +1,70 @@
+#!/bin/bash -l
+
+cat > /root/solve-install-docker.yml << 'EOF'
+---
+- hosts: localhost
+  vars:
+    docker_old_packages:
+      - docker
+      - docker-client
+      - docker-client-latest
+      - docker-common
+      - docker-engine
+      - docker-latest
+      - docker-latest-logrotate
+      - docker-logrotate
+    docker_packages:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    docker_services:
+      - docker.service
+      - containerd.service
+    docker_users:
+      - contributor
+  tasks:
+    - name: remove old docker packages
+      ansible.builtin.dnf:
+        name: "{{ docker_old_packages }}"
+        state: absent
+
+    - name: install yum-utils
+      ansible.builtin.dnf:
+        name: yum-utils
+        state: present
+
+    - name: add docker-ce repo
+      ansible.builtin.yum_repository:
+        file: docker-ce
+        name: docker-ce-stable
+        description: Docker CE Stable - $basearch
+        baseurl: https://download.docker.com/linux/centos/$releasever/$basearch/stable
+        enabled: true
+        gpgcheck: true
+        gpgkey: https://download.docker.com/linux/centos/gpg
+
+    - name: install docker packages
+      ansible.builtin.dnf:
+        name: "{{ docker_packages }}"
+        state: present
+
+    - name: start and enable docker services
+      ansible.builtin.systemd:
+        name: "{{ service }}"
+        enabled: true
+        state: started
+      loop: "{{ docker_services }}"
+      loop_control:
+        loop_var: service
+
+    - name: add docker users to the docker group
+      ansible.builtin.user:
+        name: "{{ user }}"
+        groups: docker
+        append: yes
+      loop: "{{ docker_users }}"
+      loop_control:
+        loop_var: user
+EOF
+
+ansible-playbook /root/solve-install-docker.yml
