@@ -91,19 +91,23 @@ challenges:
   type: challenge
   title: Install Python
   assignment: |-
-    ### Install `git` ###
+    ### Install **git** ###
+
+    We will use **git** to clone both the **pyenv** and **community.mysql** collection repos.
 
     ```
     sudo yum install git
     ```
 
-    ### Checkout `pyenv` ###
+    ### Checkout **pyenv** ###
+
+    Potentially unnecessary depending on the version of your system Python, but included for reference.
 
     ```
     git clone https://github.com/pyenv/pyenv.git ~/.pyenv
     ```
 
-    ### Add `pyenv` to `bashrc` and `source` it in ###
+    ### Add **pyenv** to **bashrc** and **source** it in ###
 
     ```
     cat >> ~/.bashrc << 'EOF'
@@ -116,37 +120,37 @@ challenges:
     source ~/.bashrc
     ```
 
-    ### Install `pyenv` build dependencies ###
+    ### Install **pyenv** build dependencies ###
 
     ```
     sudo yum install make gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel
     ```
 
-    ### Check `pyenv` for installable versions ###
+    ### Check **pyenv** for installable versions ###
 
     ```
     pyenv install --list
     ```
 
-    ### Install `python 3.9.7` (this will take a couple minutes) ###
+    ### Install **python 3.9.7** (this will take ~5 minutes) ###
 
     ```
     pyenv install --skip-existing 3.9.7
     ```
 
-    ### Set `pyenv` global version to `3.9.7` ###
+    ### Set **pyenv** global version to **3.9.7** ###
 
     ```
     pyenv global 3.9.7
     ```
 
-    ### Check `pyenv` versions ###
+    ### Check **pyenv** versions ###
 
     ```
     pyenv versions
     ```
 
-    ### Update `pip` from `python 3.9.7` to the latest version ###
+    ### Update **pip** from **python 3.9.7** to the latest version ###
 
     ```
     pip install --upgrade pip
@@ -157,4 +161,4 @@ challenges:
     hostname: centos-stream-8
   difficulty: basic
   timelimit: 1800
-checksum: "15965186079665521874"
+checksum: "15958145623811618858"
