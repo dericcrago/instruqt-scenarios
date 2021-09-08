@@ -128,16 +128,16 @@ challenges:
     pyenv install --list
     ```
 
-    ### Install `python 3.9.6` (this will take a couple minutes) ###
+    ### Install `python 3.9.7` (this will take a couple minutes) ###
 
     ```
-    pyenv install --skip-existing 3.9.6
+    pyenv install --skip-existing 3.9.7
     ```
 
-    ### Set `pyenv` global version to `3.9.6` ###
+    ### Set `pyenv` global version to `3.9.7` ###
 
     ```
-    pyenv global 3.9.6
+    pyenv global 3.9.7
     ```
 
     ### Check `pyenv` versions ###
@@ -146,7 +146,7 @@ challenges:
     pyenv versions
     ```
 
-    ### Update `pip` from `python 3.9.6` to the latest version ###
+    ### Update `pip` from `python 3.9.7` to the latest version ###
 
     ```
     pip install --upgrade pip

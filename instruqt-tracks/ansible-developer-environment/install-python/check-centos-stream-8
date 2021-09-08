@@ -74,7 +74,7 @@ cat > /root/check-install-python.yml << 'EOF'
       - tk-devel
       - xz-devel
       - zlib-devel
-    pyenv_python_version: '3.9.6'
+    pyenv_python_version: '3.9.7'
     pyenv_user: contributor
   tasks:
     - name: check that git is installed
