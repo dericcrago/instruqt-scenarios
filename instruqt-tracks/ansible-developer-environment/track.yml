@@ -3,13 +3,14 @@ id: jgcv8ag8mdsy
 type: track
 title: Ansible Developer Environment
 description: ""
-icon: ""
+icon: https://www.ansible.com/hubfs/2016_Images/Assets/Ansible-Mark-Large-RGB-Pool.png
+level: beginner
 tags: []
 owner: redhat
 developers:
 - dcrago@redhat.com
-private: true
-published: false
+private: false
+published: true
 skipping_enabled: true
 challenges:
 - slug: install-docker
@@ -17,6 +18,8 @@ challenges:
   type: challenge
   title: Install Docker
   assignment: |-
+    As you will see in the later challenges, we will use Docker to run the tests locally.
+
     Snippets from the [Install Docker Engine on CentOS](https://docs.docker.com/engine/install/centos/) docs.
 
     ## [Uninstall old versions](https://docs.docker.com/engine/install/centos/#uninstall-old-versions) ##
@@ -58,6 +61,14 @@ challenges:
     ```
     sudo usermod -aG docker $USER
     ```
+
+    At this point you could either log out and back in for group changes to be recognized, or you could run the following:
+
+    ```
+    newgrp docker
+    ```
+
+    Once the group changes are recognized you should be ready to run `docker` commands.
 
     ```
     docker run hello-world
@@ -146,4 +157,4 @@ challenges:
     hostname: centos-stream-8
   difficulty: basic
   timelimit: 1800
-checksum: "7492443049504753602"
+checksum: "15965186079665521874"
