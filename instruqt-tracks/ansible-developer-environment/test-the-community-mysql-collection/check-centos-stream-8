@@ -1,0 +1,60 @@
+#!/bin/bash -l
+
+cat > /root/messages.sh << 'EOF'
+#!/bin/bash
+EOF
+
+chmod +x /root/messages.sh
+
+cat > /root/check-test-the-community-mysql-collection.yml << 'EOF'
+---
+- hosts: localhost
+  vars:
+    pyenv_python_version: '3.9.7'
+    pyenv_user: contributor
+  tasks:
+    - name: check for ansible-core
+      ansible.builtin.pip:
+        executable: ~/.pyenv/versions/{{ pyenv_python_version }}/bin/pip
+        name: ansible-core
+        state: present
+      become: true
+      become_user: "{{ pyenv_user }}"
+      register: ansible_core_result
+
+    - name: handle ansible-core missing
+      block:
+      - name: add error to messages
+        ansible.builtin.lineinfile:
+          path: /root/messages.sh
+          line: /bin/fail-message '`ansible-core` not found'
+        check_mode: false
+
+      - name: end play
+        ansible.builtin.meta: end_play
+      when: ansible_core_result is changed
+
+    - name: check for community.mysql repo cloned to ~/ansible_collections/community/mysql
+      ansible.builtin.git:
+        repo: https://github.com/ansible-collections/community.mysql.git
+        dest: ~/ansible_collections/community/mysql
+      become: true
+      become_user: "{{ pyenv_user }}"
+      register: git_clone_result
+
+    - name: handle community.mysql repo not cloned to ~/ansible_collections/community/mysql
+      block:
+      - name: add error to messages
+        ansible.builtin.lineinfile:
+          path: /root/messages.sh
+          line: /bin/fail-message '`community.mysql` repo not found at `~/ansible_collections/community/mysql`.'
+        check_mode: false
+
+      - name: end play
+        ansible.builtin.meta: end_play
+      when: git_clone_result is changed
+EOF
+
+ansible-playbook --check /root/check-test-the-community-mysql-collection.yml
+
+/root/messages.sh

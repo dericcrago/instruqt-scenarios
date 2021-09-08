@@ -1,0 +1,26 @@
+#!/bin/bash -l
+
+cat > /root/solve-test-the-community-mysql-collection.yml << 'EOF'
+---
+- hosts: localhost
+  vars:
+    pyenv_python_version: '3.9.7'
+    pyenv_user: contributor
+  tasks:
+    - name: install ansible-core
+      ansible.builtin.pip:
+        executable: ~/.pyenv/versions/{{ pyenv_python_version }}/bin/pip
+        name: ansible-core
+        state: present
+      become: true
+      become_user: "{{ pyenv_user }}"
+
+    - name: check out community.mysql
+      ansible.builtin.git:
+        repo: https://github.com/ansible-collections/community.mysql.git
+        dest: ~/ansible_collections/community/mysql
+      become: true
+      become_user: "{{ pyenv_user }}"
+EOF
+
+ansible-playbook /root/solve-test-the-community-mysql-collection.yml

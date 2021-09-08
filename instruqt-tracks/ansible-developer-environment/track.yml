@@ -161,4 +161,42 @@ challenges:
     hostname: centos-stream-8
   difficulty: basic
   timelimit: 1800
-checksum: "15958145623811618858"
+- slug: test-the-community-mysql-collection
+  id: dfgpskfqxshq
+  type: challenge
+  title: Test the community.mysql Collection
+  assignment: |-
+    ### Install **ansible-core**
+
+    ```
+    pip install ansible-core
+    ```
+
+    ### Clone the **community.mysql** Collection
+
+    ```
+    mkdir -p ~/ansible_collections/community
+    git clone https://github.com/ansible-collections/community.mysql.git ~/ansible_collections/community/mysql
+    ```
+
+    ### Run the tests
+
+    ```
+    cd ~/ansible_collections/community/mysql
+
+    # this will take ~5 minutes
+    ansible-test sanity --docker
+
+    # this will take ~1 minute
+    ansible-test units --docker
+
+    # this will take ~10 minutes
+    ansible-test integration --docker
+    ```
+  tabs:
+  - title: Terminal
+    type: terminal
+    hostname: centos-stream-8
+  difficulty: basic
+  timelimit: 1800
+checksum: "7714375468735785955"
